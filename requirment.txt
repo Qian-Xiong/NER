@@ -1,0 +1,5 @@
+huggongface
+transformers
+matplotlib
+seqeval
+pytorch-crf
