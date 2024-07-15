@@ -1,0 +1,33 @@
+{
+    "CCKS2019": {
+        "all_type": [
+            "B-ANATOMY",
+            "O",
+            "B-DISEASE",
+            "B-OPERATION",
+            "B-TESTIMAGE",
+            "I-ANATOMY",
+            "B-TESTLAB",
+            "B-DRUG",
+            "I-DISEASE",
+            "I-OPERATION",
+            "I-TESTIMAGE",
+            "I-TESTLAB",
+            "I-DRUG"
+        ],
+        "type_num": 6,
+        "all_len": 13
+    },
+
+    "dgre": {
+        "all_type": [
+            "B-故障设备",
+            "O",
+            "B-故障原因",
+            "I-故障设备",
+            "I-故障原因"
+        ],
+        "type_num": 4,
+        "all_len": 5
+    }
+}

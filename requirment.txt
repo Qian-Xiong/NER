@@ -1,5 +1,7 @@
-huggongface
+huggingface
 transformers
 matplotlib
 seqeval
 pytorch-crf
+OpenHowNet
+jieba
