@@ -143,8 +143,8 @@ class Trainer:
                 label = [self.id2label[i] for i in label]
                 preds.append(logit)
                 trues.append(label)
-                # print(logit)
-                # print(label)
+                print(logit)
+                print(label)
         report = classification_report(trues, preds)
         with open(os.path.join(self.output_dir, "classification_report.txt"), 'w', encoding='utf-8') as file:
             file.write(report)
@@ -190,7 +190,8 @@ def build_optimizer_and_scheduler(args, model, t_total):
     # LSBER
     params = [
         {'params': model.token_encoder.parameters(), 'lr': 8e-5},  # BERT层的学习率
-        {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
+        # {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
+        {'params': model.gcn.parameters(), 'lr': 1e-3},  # GCN层的学习率
         {'params': model.bilstm.parameters(), 'lr': 1e-5},  # BiLSTM层的学习率
         {'params': model.linear.parameters(), 'lr': 1e-4},  # 线性层的学习率
         # {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
@@ -259,6 +260,6 @@ def main(data_name, model_path):
 
 if __name__ == "__main__":
     data_name = "CCKS2019"
-    model_path = "models.SLNER"
+    model_path = "models.GLSNER"
 
     main(data_name, model_path)

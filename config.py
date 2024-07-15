@@ -18,6 +18,7 @@ class NerConfig:
         cf = CommonConfig()
         self.bert_dir = cf.bert_dir
         self.model_path = model_path
+        self.data_name =data_name
         self.output_dir = os.path.join(cf.output_dir, data_name, model_path.split(".")[-1],
                                        datetime.now().strftime("%Y%m%d-%H%M"))
         # 检查路径是否存在，如果不存在则创建
@@ -42,12 +43,12 @@ class NerConfig:
 
         self.max_seq_len = 200
         self.epochs = 100
-        self.train_batch_size = 12
-        self.dev_batch_size = 32
+        self.train_batch_size = 16
+        self.dev_batch_size = 16
         self.bert_learning_rate = 3e-5
         self.crf_learning_rate = 3e-3
         self.adam_epsilon = 1e-8
         self.weight_decay = 0.01
         self.warmup_proportion = 0.01
         self.save_step = 500
-        self.pretrain_path = "./checkpoint/CCKS2017/SLNER/20240709-1124/SLNER_CCKS2017_best.bin"
+        self.pretrain_path = "./checkpoint/CCKS2019/GLSNER/20240713-2014/GLSNER_CCKS2019_500.bin"

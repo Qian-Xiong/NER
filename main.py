@@ -89,7 +89,7 @@ class Trainer:
                 if grad_steps >= patience:
                     print(
                         f"Loss has not improved for {patience} steps, stopping training.  mini_loss={mini_loss} steps={global_step}.")
-                    plt.plot(loss_infos.keys(), loss_infos.values(), marker='_')
+                    plt.plot(loss_infos.keys(), loss_infos.values(), marker='')
                     # 添加标题和轴标签
                     plt.title('Loss over Steps')
                     plt.xlabel('Steps')
@@ -104,7 +104,7 @@ class Trainer:
             print(
                 f'Epoch [{epoch}/{self.epochs}] {global_step}/{self.total_step} loss:{loss_infos[global_step - 1]} mini_loss={mini_loss} steps={grad_steps}')
 
-        plt.plot(loss_infos.keys(), loss_infos.values(), marker='_')
+        plt.plot(loss_infos.keys(), loss_infos.values(), marker='')
         # 添加标题和轴标签
         plt.title('Loss over Steps')
         plt.xlabel('Steps')
@@ -190,7 +190,8 @@ def build_optimizer_and_scheduler(args, model, t_total):
     # LSBER
     params = [
         {'params': model.token_encoder.parameters(), 'lr': 8e-5},  # BERT层的学习率
-        {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
+        # {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
+        {'params': model.gcn.parameters(), 'lr': 1e-3},  # GCN层的学习率
         {'params': model.bilstm.parameters(), 'lr': 1e-4},  # BiLSTM层的学习率
         {'params': model.linear.parameters(), 'lr': 1e-3},  # 线性层的学习率
         # {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
@@ -219,7 +220,8 @@ def main(data_name, model_path):
 
     with open(os.path.join(args.data_path, "dev.txt"), "r", encoding="utf-8") as fp:
         dev_data = NerDataset.process_file_CCKS(fp)
-    # dev_data = [json.loads(d) for d in dev_data]
+        # dev_data = fp.read().split("\n")
+        # dev_data = [json.loads(d) for d in dev_data]
 
     train_dataset = NerDataset(train_data, args, tokenizer)
     dev_dataset = NerDataset(dev_data, args, tokenizer)
@@ -257,7 +259,7 @@ def main(data_name, model_path):
 
 
 if __name__ == "__main__":
-    data_name = "CCKS2017"
-    model_path = "models.SLNER"
+    data_name = "CCKS2019"
+    model_path = "models.GLSNER"
 
     main(data_name, model_path)
