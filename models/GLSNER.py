@@ -40,7 +40,7 @@ class BertNer(nn.Module):
         self.loss_f = CrossEntropyLoss()
         self.dropout = nn.Dropout(p=0.1)
         self.max_seq_len = args.max_seq_len
-        self.sememe_emb = "knn"
+        self.sememe_emb = "att"
 
     def __read_file(self, file):
         with open(f"{file}/label_sememes_tree.json", "r", encoding="utf-8") as f:

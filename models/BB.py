@@ -17,7 +17,7 @@ class ModelOutput:
 class BertNer(nn.Module):
     def __init__(self, args):
         super(BertNer, self).__init__()
-        self.bert = BertModel.from_pretrained(args.bert_dir)
+        self.token_encoder = BertModel.from_pretrained(args.bert_dir)
         self.bert_config = BertConfig.from_pretrained(args.bert_dir)
         hidden_size = self.bert_config.hidden_size
         self.max_seq_len = args.max_seq_len
@@ -26,7 +26,7 @@ class BertNer(nn.Module):
         self.linear = nn.Linear(hidden_size, args.num_labels)
 
     def forward(self, input_ids, attention_mask, labels=None):
-        bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        bert_output = self.token_encoder(input_ids=input_ids, attention_mask=attention_mask)
         seq_out = bert_output[0]  # [batchsize, max_len, hidden_size]
         seq_out = self.linear(seq_out)  # [batchsize, max_len, num_labels]
 

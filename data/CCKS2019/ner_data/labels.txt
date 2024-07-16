@@ -1,6 +1,6 @@
-ANATOMY
-DISEASE
-OPERATION
-TESTIMAGE
-TESTLAB
-DRUG
+解剖部位
+疾病和诊断
+手术
+测试图像
+测试项目
+药物

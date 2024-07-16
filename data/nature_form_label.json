@@ -1,19 +1,19 @@
 {
     "CCKS2019": {
         "all_type": [
-            "B-ANATOMY",
+            "B-解剖部位",
             "O",
-            "B-DISEASE",
-            "B-OPERATION",
-            "B-TESTIMAGE",
-            "I-ANATOMY",
-            "B-TESTLAB",
-            "B-DRUG",
-            "I-DISEASE",
-            "I-OPERATION",
-            "I-TESTIMAGE",
-            "I-TESTLAB",
-            "I-DRUG"
+            "B-疾病和诊断",
+            "B-手术",
+            "B-药物",
+            "I-解剖部位",
+            "B-测试图像",
+            "B-测试项目",
+            "I-疾病和诊断",
+            "I-手术",
+            "I-药物",
+            "I-测试图像",
+            "I-测试项目"
         ],
         "type_num": 6,
         "all_len": 13
