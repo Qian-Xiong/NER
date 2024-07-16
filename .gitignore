@@ -258,3 +258,4 @@ fabric.properties
 checkpoint/
 model_hub/
 !data/*.json
+!data/CCKS*/*.json

@@ -22,7 +22,7 @@ class Trainer:
                  output_dir=None,
                  model=None,
                  train_loader=None,
-                 save_step=100,
+                 save_step=1000,
                  dev_loader=None,
                  test_loader=None,
                  optimizer=None,
@@ -50,7 +50,7 @@ class Trainer:
         loss_infos = {}
         mini_loss = float('inf')
         grad_steps = 0
-        patience = 500
+        patience = 5000
         best_model = None
         for epoch in range(1, self.epochs + 1):
             loop = tqdm(enumerate(self.train_loader), total=len(self.train_loader), leave=False)
@@ -191,8 +191,8 @@ def build_optimizer_and_scheduler(args, model, t_total):
     params = [
         {'params': model.token_encoder.parameters(), 'lr': 8e-5},  # BERT层的学习率
         # {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
-        # {'params': model.gcn.parameters(), 'lr': 1e-3},  # GCN层的学习率
-        # {'params': model.bilstm.parameters(), 'lr': 1e-4},  # BiLSTM层的学习率
+        {'params': model.gcn.parameters(), 'lr': 0.8},  # GCN层的学习率
+        {'params': model.bilstm.parameters(), 'lr': 1e-4},  # BiLSTM层的学习率
         {'params': model.linear.parameters(), 'lr': 1e-3},  # 线性层的学习率
         # {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
     ]

@@ -109,12 +109,12 @@ def main(dataset):
                     for item in sememe:
                         item = str(item)
                         if not tokenizer.convert_tokens_to_ids(
-                                tokenizer.tokenize(f"{startToken} {item.split('|')[0]}")[1:]):
+                                tokenizer.tokenize(f"{item.split('|')[0]}")):
                             print(tokenizer.convert_tokens_to_ids(
-                                tokenizer.tokenize(f"{startToken} {item.split('|')[0]}")[1:]))
+                                tokenizer.tokenize(f"{item.split('|')[0]}")))
                         sememes_id.append(tokenizer.convert_tokens_to_ids(
-                            tokenizer.tokenize(f"{startToken} {item.split('|')[0]}")[1:]))
-                        sememes.append(tokenizer.tokenize(f"{startToken} {item.split('|')[0]}")[1:])
+                            tokenizer.tokenize(f"{item.split('|')[0]}")))
+                        sememes.append(tokenizer.tokenize(f"{item.split('|')[0]}"))
                     senses.append(sememes)
                     senses_id.append([sememes_id, adj])
                 item_list.append(senses)
