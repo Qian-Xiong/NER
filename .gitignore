@@ -259,3 +259,4 @@ checkpoint/
 model_hub/
 !data/*.json
 !data/CCKS*/*.json
+!data/*/*/*.json
