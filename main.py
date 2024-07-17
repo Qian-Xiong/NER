@@ -194,7 +194,7 @@ def build_optimizer_and_scheduler(args, model, t_total):
         {'params': model.gcn.parameters(), 'lr': 0.8},  # GCN层的学习率
         {'params': model.bilstm.parameters(), 'lr': 1e-4},  # BiLSTM层的学习率
         {'params': model.linear.parameters(), 'lr': 1e-3},  # 线性层的学习率
-        # {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
+        {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
     ]
     optimizer = AdamW(params, eps=args.adam_epsilon)
     scheduler = get_linear_schedule_with_warmup(

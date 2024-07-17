@@ -41,6 +41,8 @@ class BertNer(nn.Module):
         self.dropout = nn.Dropout(p=0.1)
         self.max_seq_len = args.max_seq_len
         self.sememe_emb = "att"
+        self.crf = CRF(args.num_labels, batch_first=True)
+
 
     def __read_file(self, file):
         with open(f"{file}/label_sememes_tree.json", "r", encoding="utf-8") as f:
@@ -101,24 +103,28 @@ class BertNer(nn.Module):
         label_embedding = self.label_representation.expand(current_batch_size, tag_lens, hidden_size)
         label_embeddings = label_embedding.transpose(2, 1)
         seq_out = torch.matmul(token_embeddings, label_embeddings)
-
-
-        # 计算交叉熵损失
+        logits = self.crf.decode(seq_out, mask=attention_mask.bool())
         loss = None
         if labels is not None:
-            # Flatten the predictions and labels
-            seq_out = seq_out.view(-1, seq_out.size(-1))  # [batch_size * max_len, num_labels]
-            labels = labels.view(-1)  # [batch_size * max_len]
-            loss = nn.CrossEntropyLoss()(seq_out, labels.long())
-
-        # 使用softmax获取预测概率
-        logits = nn.Softmax(dim=-1)(seq_out)
-
-        # 将logits重新形状为[batch_size, max_len, num_labels]
-        logits = logits.view(-1, self.max_seq_len, seq_out.size(-1))
-        logits = torch.argmax(logits, dim=-1).tolist()
-
+            loss = -self.crf(seq_out, labels, mask=attention_mask.bool(), reduction='mean')
         model_output = ModelOutput(logits, labels, loss)
+
+        # # 计算交叉熵损失
+        # loss = None
+        # if labels is not None:
+        #     # Flatten the predictions and labels
+        #     seq_out = seq_out.view(-1, seq_out.size(-1))  # [batch_size * max_len, num_labels]
+        #     labels = labels.view(-1)  # [batch_size * max_len]
+        #     loss = nn.CrossEntropyLoss()(seq_out, labels.long())
+        #
+        # # 使用softmax获取预测概率
+        # logits = nn.Softmax(dim=-1)(seq_out)
+        #
+        # # 将logits重新形状为[batch_size, max_len, num_labels]
+        # logits = logits.view(-1, self.max_seq_len, seq_out.size(-1))
+        # logits = torch.argmax(logits, dim=-1).tolist()
+        #
+        # model_output = ModelOutput(logits, labels, loss)
         return model_output
 
 
@@ -168,44 +174,3 @@ class GraphConvolution(nn.Module):
         else:
             return output
 
-    # def forward(self, label_id):
-    #     sememe_s = []
-    #     for label_words in label_id:
-    #         span = []
-    #         for word_list in label_words:
-    #             if not word_list:
-    #                 continue
-    #             s = self.embedding(torch.tensor(word_list[0]).cuda().unsqueeze(0)).squeeze(0)
-    #             senses_id_list = word_list[1]
-    #             if len(senses_id_list) != 0:
-    #                 sememe_tensor = []
-    #                 for sense in senses_id_list:
-    #                     nodes = sense[0]
-    #                     adj = torch.FloatTensor(sense[1]).cuda()
-    #                     nodes_tensor = torch.cat([torch.mean(
-    #                         self.embedding(torch.tensor(node_tokens).cuda().unsqueeze(0)).squeeze(0),
-    #                         dim=0).unsqueeze(0) for node_tokens in nodes], dim=0)
-    #                 assert adj.shape[0] == nodes_tensor.shape[0]
-    #                 out = self.gcn(nodes_tensor, adj)[0, :]
-    #                 sememe_tensor.append(out)
-    #             sememe_tensor = torch.stack(sememe_tensor, dim=0)
-    #         if self.sememe_emb == "att":
-    #             distance = F.pairwise_distance(s, sememe_tensor, p=2)
-    #             attentionSocre = torch.softmax(distance, dim=0)
-    #             attentionSememeTensor = torch.einsum("a,ab->ab", attentionSocre, sememe_tensor)
-    #             span.append(torch.cat([attentionSememeTensor.mean(0).unsqueeze(0), s], dim=0).mean(0))
-    #         elif self.sememe_emb == "knn":
-    #             distance = F.pairwise_distance(s, sememe_tensor, p=2)
-    #             span.append(torch.cat([torch.stack(
-    #                 [sememe_tensor[idx] for idx in torch.sort(distance, descending=True)[1][:3]],
-    #                 dim=0).mean(0).unsqueeze(0), s], dim=0).mean(0))
-    #         else:
-    #             span.append(torch.cat([torch.stack(
-    #                 [sememe_tensor[random.randint(0, sememe_tensor.shape[0])] for idx in range(3)],
-    #                 dim=0).mean(0).unsqueeze(0), s], dim=0).mean(0))
-    #         if len(span) != 0:
-    #             sememe_s.append(torch.stack(span, dim=0).mean(0))
-    #         else:
-    #             sememe_s.append(torch.ones(self.hidden_size).cuda())
-    #
-    #     return torch.stack(sememe_s, dim=0)

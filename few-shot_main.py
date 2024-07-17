@@ -214,12 +214,12 @@ def main(data_name, model_path):
     tokenizer = BertTokenizer.from_pretrained(args.bert_dir)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    with open(os.path.join(args.data_path, "train.txt"), "r", encoding="utf-8") as fp:
+    with open(os.path.join(args.data_path, "train_zh.txt"), "r", encoding="utf-8") as fp:
         # train_data = fp.read().split("\n")
         train_data = NerDataset.process_file_CCKS(fp)
     # train_data = [json.loads(d) for d in train_data]
 
-    with open(os.path.join(args.data_path, "dev.txt"), "r", encoding="utf-8") as fp:
+    with open(os.path.join(args.data_path, "dev_zh.txt"), "r", encoding="utf-8") as fp:
         dev_data = NerDataset.process_file_CCKS(fp)
     # dev_data = [json.loads(d) for d in dev_data]
 
