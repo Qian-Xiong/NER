@@ -27,7 +27,15 @@ class BertNer(nn.Module):
         self.label_ids = self.__read_file(args.data_dir+args.data_name)
         hidden_size = self.bert_config.hidden_size
         self.lstm_hiden = 128
+        self.rnn_dim = 128
         self.max_seq_len = args.max_seq_len
+        # self.gru = nn.GRU(hidden_size,
+        #                   self.rnn_dim,
+        #                   num_layers=2,
+        #                   bidirectional=True,
+        #                   dropout=.3,
+        #                   batch_first=True
+        #                   )
         self.bilstm = nn.LSTM(hidden_size, self.lstm_hiden, 1, bidirectional=True, batch_first=True,
                               dropout=0.1)
         self.linear = nn.Linear(self.lstm_hiden * 2, hidden_size)
@@ -41,8 +49,6 @@ class BertNer(nn.Module):
         self.dropout = nn.Dropout(p=0.1)
         self.max_seq_len = args.max_seq_len
         self.sememe_emb = "att"
-        self.crf = CRF(args.num_labels, batch_first=True)
-
 
     def __read_file(self, file):
         with open(f"{file}/label_sememes_tree.json", "r", encoding="utf-8") as f:
@@ -91,40 +97,43 @@ class BertNer(nn.Module):
                 sememe_s.append(torch.ones(self.bert_config.hidden_size).cuda())
         label_representation = torch.stack(sememe_s, dim=0)
         self.label_representation = label_representation.detach()
-        outputs = self.token_encoder(input_ids=input_ids, attention_mask=attention_mask)
+        raw_embedding = self.token_encoder.embeddings(input_ids=input_ids)
+        tag_lens, hidden_size = self.label_representation.shape
+        current_batch_size = raw_embedding.shape[0]
+        label_embedding = self.label_representation.expand(current_batch_size, tag_lens, hidden_size)
+        inputs_embeds = torch.cat((label_embedding, raw_embedding), dim=1)
+        label_attention_mask = torch.ones(current_batch_size, len(self.tag2id)).cuda()
+        all_attention_mask = torch.cat((label_attention_mask, attention_mask), dim=1)
+
+        outputs = self.token_encoder(inputs_embeds=inputs_embeds, attention_mask=all_attention_mask)
         token_embeddings = outputs[0]  # [batchsize, max_len, 768]
         batch_size = token_embeddings.size(0)
         seq_out, _ = self.bilstm(token_embeddings)
         seq_out = seq_out.contiguous().view(-1, self.lstm_hiden * 2)
-        seq_out = seq_out.contiguous().view(batch_size, self.max_seq_len, -1)
-        token_embeddings = self.linear(seq_out)
-        tag_lens, hidden_size = self.label_representation.shape
-        current_batch_size = token_embeddings.shape[0]
-        label_embedding = self.label_representation.expand(current_batch_size, tag_lens, hidden_size)
-        label_embeddings = label_embedding.transpose(2, 1)
-        seq_out = torch.matmul(token_embeddings, label_embeddings)
-        logits = self.crf.decode(seq_out, mask=attention_mask.bool())
+        seq_out = seq_out.contiguous().view(batch_size, self.max_seq_len+len(self.tag2id), -1)
+        seq_out = self.linear(seq_out)
+
+
+        # 计算交叉熵损失
         loss = None
         if labels is not None:
-            loss = -self.crf(seq_out, labels, mask=attention_mask.bool(), reduction='mean')
-        model_output = ModelOutput(logits, labels, loss)
+            # 只保留原始输入长度的部分
+            seq_out = seq_out[:, len(self.tag2id):, :]  # 只保留原始输入长度的部分
+            # labels = labels[:, :self.max_seq_len]  # 确保标签与原始输入长度匹配
 
-        # # 计算交叉熵损失
-        # loss = None
-        # if labels is not None:
-        #     # Flatten the predictions and labels
-        #     seq_out = seq_out.view(-1, seq_out.size(-1))  # [batch_size * max_len, num_labels]
-        #     labels = labels.view(-1)  # [batch_size * max_len]
-        #     loss = nn.CrossEntropyLoss()(seq_out, labels.long())
-        #
-        # # 使用softmax获取预测概率
-        # logits = nn.Softmax(dim=-1)(seq_out)
-        #
-        # # 将logits重新形状为[batch_size, max_len, num_labels]
-        # logits = logits.view(-1, self.max_seq_len, seq_out.size(-1))
-        # logits = torch.argmax(logits, dim=-1).tolist()
-        #
-        # model_output = ModelOutput(logits, labels, loss)
+            # Flatten the predictions and labels
+            seq_out = seq_out.contiguous().reshape(-1, seq_out.size(-1))  # [batch_size * max_len, num_labels]
+            labels = labels.view(-1)  # [batch_size * max_len]
+            loss = nn.CrossEntropyLoss()(seq_out, labels.long())
+
+        # 使用softmax获取预测概率
+        logits = nn.Softmax(dim=-1)(seq_out)
+
+        # 将logits重新形状为[batch_size, max_len, num_labels]
+        logits = logits.view(-1, self.max_seq_len, seq_out.size(-1))
+        logits = torch.argmax(logits, dim=-1).tolist()
+
+        model_output = ModelOutput(logits, labels, loss)
         return model_output
 
 
@@ -173,4 +182,3 @@ class GraphConvolution(nn.Module):
             return output + self.bias
         else:
             return output
-

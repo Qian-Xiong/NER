@@ -51,4 +51,4 @@ class NerConfig:
         self.weight_decay = 0.01
         self.warmup_proportion = 0.01
         self.save_step = 500
-        self.pretrain_path = "./checkpoint/CCKS2019/GLSNER/GLSNER_CCKS2019_last.bin"
+        self.pretrain_path = "./checkpoint/CCKS2019/GLSNER/20240718-2310/GLSNER_CCKS2019_9000.bin"

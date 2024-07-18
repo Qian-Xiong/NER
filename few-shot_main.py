@@ -187,13 +187,13 @@ def build_optimizer_and_scheduler(args, model, t_total):
     # ]
     #
     # optimizer = AdamW(optimizer_grouped_parameters, lr=args.bert_learning_rate, eps=args.adam_epsilon)
-    # LSBER
     params = [
         {'params': model.token_encoder.parameters(), 'lr': 8e-5},  # BERT层的学习率
-        # {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
-        {'params': model.gcn.parameters(), 'lr': 1e-3},  # GCN层的学习率
-        {'params': model.bilstm.parameters(), 'lr': 1e-5},  # BiLSTM层的学习率
-        {'params': model.linear.parameters(), 'lr': 1e-4},  # 线性层的学习率
+        # # {'params': model.label_encoder.parameters(), 'lr': 1e-5},  # BERT层的学习率
+        {'params': model.gcn.parameters(), 'lr': 0.8},  # GCN层的学习率
+        {'params': model.bilstm.parameters(), 'lr': 1e-4},  # BiLSTM层的学习率
+        # {'params': model.gru.parameters(), 'lr': 1e-4},  # BiGRU层的学习率
+        {'params': model.linear.parameters(), 'lr': 1e-3},  # 线性层的学习率
         # {'params': model.crf.parameters(), 'lr': 1e-4},  # CRF层的学习率
     ]
     optimizer = AdamW(params, eps=args.adam_epsilon)
